@@ -13,6 +13,9 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String,
     },
+    language:{
+        type:String
+    },
     tokens:[{
         token:{
             type:String

@@ -1,6 +1,13 @@
 //This file contains our main code i.e application
 const express = require("express");
 const app = express();
+const http = require('http').Server(app);
+const io = require("socket.io")(http, {
+    cors: {
+      origin: "http://localhost:4200",
+      methods: ["GET", "POST"]
+    }
+});
 const port = process.env.PORT || 3000;
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
@@ -14,8 +21,7 @@ const OutlookStrategy = require("passport-outlook").Strategy;
 
 require("./db/conn");
 const User = require("./models/users");
-const { JsonWebTokenError } = require("jsonwebtoken");
-const { json } = require("body-parser");
+
 
 var OUTLOOK_CLIENT_ID = "eb3c0985-4ec9-4335-911c-19504d5b76da";
 var OUTLOOK_CLIENT_SECRET = "~7C3~e8nqHf4_Elvdn1e25O4x_Z5lvjaXf";
@@ -158,6 +164,21 @@ app.post("/login", async (req, res) => {
   }
 });
 
+//Change Language
+app.patch('/changelang/:id',async (req,res)=>{
+  const _id=req.params.id;
+  console.log(_id);
+
+  User.findByIdAndUpdate(req.params.id,{$set:req.body},{new:true}, function(err, result){
+    if(err){
+        console.log(err);
+    }
+    console.log(req.body);
+    console.log(result);
+    res.send('Done')
+  });
+})
+
 //Is Authenticated
 app.get("/verifyuser", verifyToken, (req, res) => {
   console.log("Token Verified");
@@ -212,6 +233,7 @@ app.post("/users", async (req, res) => {
       res.status(501).json({ message: "Internal Server Error" });
     } else {
       console.log("User registered successfully");
+      io.emit('user register', 'SocketIO:Account created successfully');
       res.send(newUser);
     }
   });
@@ -254,6 +276,24 @@ app.get("/internalServerError", (req, res) => {
 });
 
 //Listening to the port
-app.listen(port, () => {
+http.listen(port, () => {
   console.log(`Connected at port ${port}`);
+});
+
+//SocketIO
+io.on('connection', (socket) => {
+  console.log(`A user with ID:-${socket.id} connected`);
+
+  socket.on('client message', msg => {
+    console.log(msg);
+    if(msg=='Hello Server'){
+        io.emit('server message', 'Hi Siddhesh');
+    }else if(msg=='Bye'){
+        io.emit('server message', 'Will miss you');
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`User with ID:-${socket.id} disconnected`);
+  });
 });
