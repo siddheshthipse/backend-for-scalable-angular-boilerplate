@@ -165,17 +165,18 @@ app.post("/login", async (req, res) => {
 });
 
 //Change Language
-app.patch('/changelang/:id',async (req,res)=>{
+app.put('/changelang/:id',async (req,res)=>{
   const _id=req.params.id;
-  console.log(_id);
 
+  console.log('Change requested');
   User.findByIdAndUpdate(req.params.id,{$set:req.body},{new:true}, function(err, result){
     if(err){
         console.log(err);
     }
     console.log(req.body);
     console.log(result);
-    res.send('Done')
+    // res.send('Settings Updated');
+    res.status(200);
   });
 })
 
@@ -216,6 +217,10 @@ app.post("/users", async (req, res) => {
     email: req.body.email,
     username: req.body.username,
     password: req.body.password,
+    setting:{
+      language:"en",
+      dateformat:"d/M/yy"
+    }
   });
 
   const token = await newUser.generateAuthToken();

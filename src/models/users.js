@@ -13,8 +13,13 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String,
     },
-    language:{
-        type:String
+    setting:{
+        language:{
+            type:String
+        },
+        dateformat:{
+            type:String
+        }
     },
     tokens:[{
         token:{
